@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LuggageIQ — Amazon India Competitive Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:      #0d0d0d;
+  --ink2:     #3a3a3a;
+  --ink3:     #888;
+  --ink4:     #bbb;
+  --paper:    #fafaf8;
+  --paper2:   #f4f3f0;
+  --paper3:   #eceae5;
+  --line:     #e0deda;
+  --line2:    #ccc9c3;
+  --blue:     #1a3fc4;
+  --blue-bg:  #eef1fc;
+  --green:    #0f7c4a;
+  --green-bg: #e8f5ee;
+  --red:      #c42020;
+  --red-bg:   #fdeaea;
+  --amber:    #9a5f00;
+  --amber-bg: #fef4e0;
+  --purple:   #5b28c8;
+  --purple-bg:#f0ecfd;
+  --serif:    'Instrument Serif', Georgia, serif;
+  --sans:     'Geist', system-ui, sans-serif;
+  --mono:     'Geist Mono', 'Courier New', monospace;
+  --r:        6px;
+  --r2:       10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { font-family: var(--sans); background: var(--paper); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+.shell { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; flex-shrink: 0; background: var(--ink); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; overflow-y: auto; }
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.s-logo { padding: 28px 24px 24px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.s-logo-mark { font-family: var(--serif); font-size: 22px; color: #fff; letter-spacing: -.3px; line-height: 1; }
+.s-logo-mark em { font-style: italic; color: rgba(255,255,255,.4); }
+.s-logo-sub { margin-top: 5px; font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.28); font-family: var(--mono); }
+
+.s-section { padding: 20px 24px 8px; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.22); font-family: var(--mono); }
+
+.nav-item { display: flex; align-items: center; gap: 11px; padding: 10px 24px; cursor: pointer; color: rgba(255,255,255,.42); font-size: 12.5px; font-weight: 400; transition: color .15s, background .15s; position: relative; border: none; background: none; width: 100%; text-align: left; }
+.nav-item::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 2px; height: 0; background: #fff; transition: height .2s; border-radius: 0 2px 2px 0; }
+.nav-item:hover { color: rgba(255,255,255,.75); background: rgba(255,255,255,.04); }
+.nav-item.active { color: #fff; background: rgba(255,255,255,.07); }
+.nav-item.active::before { height: 24px; }
+.nav-icon { font-size: 13px; width: 16px; opacity: .6; flex-shrink: 0; }
+.nav-item.active .nav-icon { opacity: 1; }
+
+.s-brand-list { padding: 4px 16px 12px; }
+.s-brand-item { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--r); cursor: pointer; transition: background .12s; }
+.s-brand-item:hover { background: rgba(255,255,255,.05); }
+.s-brand-item input[type=checkbox] { width: 13px; height: 13px; accent-color: #fff; cursor: pointer; flex-shrink: 0; }
+.s-swatch { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.s-brand-label { font-size: 11.5px; color: rgba(255,255,255,.45); cursor: pointer; }
+
+.s-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid rgba(255,255,255,.07); }
+.s-footer-stat { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,.22); line-height: 1.8; }
+
+.topbar { background: var(--paper); border-bottom: 1px solid var(--line); padding: 0 36px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-left { display: flex; align-items: baseline; gap: 16px; min-width: 0; }
+.page-title { font-family: var(--serif); font-size: 20px; color: var(--ink); letter-spacing: -.2px; white-space: nowrap; }
+.breadcrumb { font-size: 10px; color: var(--ink3); font-family: var(--mono); letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 4px; font-size: 10.5px; font-weight: 500; font-family: var(--mono); letter-spacing: .2px; border: 1px solid; white-space: nowrap; }
+.badge-blue   { background: var(--blue-bg);   color: var(--blue);   border-color: #c5cfee; }
+.badge-green  { background: var(--green-bg);  color: var(--green);  border-color: #b5d9c6; }
+.badge-amber  { background: var(--amber-bg);  color: var(--amber);  border-color: #e8d5a5; }
+
+.content { padding: 32px 36px; flex: 1; }
+.view { display: none; }
+.view.active { display: block; animation: reveal .2s ease; }
+@keyframes reveal { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+.pg-header { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.pg-eyebrow { font-family: var(--mono); font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-bottom: 6px; }
+.pg-h1 { font-family: var(--serif); font-size: 32px; color: var(--ink); letter-spacing: -.5px; line-height: 1.1; }
+.pg-h1 em { font-style: italic; color: var(--ink3); }
+.pg-desc { margin-top: 8px; font-size: 13px; color: var(--ink2); line-height: 1.6; max-width: 560px; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; margin-bottom: 28px; background: #fff; }
+.kpi { padding: 20px 22px; border-right: 1px solid var(--line); position: relative; }
+.kpi:last-child { border-right: none; }
+.kpi-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); margin-bottom: 10px; }
+.kpi-value { font-family: var(--serif); font-size: 34px; color: var(--ink); letter-spacing: -.5px; line-height: 1; }
+.kpi-sub { font-size: 11px; color: var(--ink3); margin-top: 5px; }
+.kpi-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+.card { background: #fff; border: 1px solid var(--line); border-radius: var(--r2); overflow: hidden; }
+.card-header { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 11.5px; font-weight: 600; letter-spacing: .5px; color: var(--ink2); text-transform: uppercase; font-family: var(--mono); }
+.card-hint { font-size: 11px; color: var(--ink3); }
+.card-body { padding: 20px; }
+.mb24 { margin-bottom: 24px; }
+
+.chart-wrap { position: relative; width: 100%; }
+.h200 { height: 200px; }
+.h240 { height: 240px; }
+.h280 { height: 280px; }
+
+.tbl-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead tr { border-bottom: 2px solid var(--line); }
+.data-table th { padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); white-space: nowrap; cursor: pointer; user-select: none; }
+.data-table th:hover { color: var(--ink); }
+.data-table td { padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink2); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover td { background: var(--paper2); }
+
+.brand-cell { display: flex; align-items: center; gap: 10px; }
+.brand-swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.brand-cell-name { font-weight: 600; font-size: 13px; color: var(--ink); }
+
+.mbar { display: flex; align-items: center; gap: 8px; }
+.mbar-track { flex: 1; height: 4px; background: var(--paper3); border-radius: 2px; overflow: hidden; min-width: 60px; }
+.mbar-fill { height: 100%; border-radius: 2px; transition: width .5s; }
+.mbar-val { font-family: var(--mono); font-size: 11.5px; color: var(--ink2); min-width: 28px; text-align: right; }
+
+.tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 3px; font-size: 10.5px; font-weight: 500; font-family: var(--mono); letter-spacing: .2px; border: 1px solid; }
+.tag-green  { background: var(--green-bg);  color: var(--green);  border-color: #b5d9c6; }
+.tag-red    { background: var(--red-bg);    color: var(--red);    border-color: #e8b8b8; }
+.tag-amber  { background: var(--amber-bg);  color: var(--amber);  border-color: #e8d5a5; }
+.tag-blue   { background: var(--blue-bg);   color: var(--blue);   border-color: #c5cfee; }
+.tag-purple { background: var(--purple-bg); color: var(--purple); border-color: #cbbfed; }
+.tag-neutral{ background: var(--paper2);    color: var(--ink2);   border-color: var(--line2); }
+
+.stars { color: #c9930a; letter-spacing: -1px; font-size: 12px; }
+.star-num { font-family: var(--mono); font-size: 11.5px; color: var(--ink2); margin-left: 3px; }
+
+.filter-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: #fff; border: 1px solid var(--line); border-radius: var(--r2); padding: 12px 18px; margin-bottom: 20px; }
+.filter-lbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); }
+.filter-select { background: var(--paper2); border: 1px solid var(--line2); border-radius: var(--r); color: var(--ink); padding: 5px 10px; font-size: 12px; font-family: var(--sans); outline: none; cursor: pointer; transition: border-color .12s; }
+.filter-select:hover, .filter-select:focus { border-color: var(--ink); }
+.filter-div { width: 1px; height: 18px; background: var(--line); }
+
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.pcard { background: #fff; border: 1px solid var(--line); border-radius: var(--r2); padding: 16px 18px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.pcard:hover { border-color: var(--ink); box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+.pcard.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,63,196,.08); }
+.pcard-brand { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.pcard-title { font-size: 13px; font-weight: 500; color: var(--ink); line-height: 1.4; margin-bottom: 12px; }
+.pcard-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.pcard-footer { display: flex; align-items: flex-end; justify-content: space-between; }
+.pcard-price { font-family: var(--serif); font-size: 20px; color: var(--ink); }
+.pcard-list  { font-family: var(--mono); font-size: 11px; color: var(--ink3); text-decoration: line-through; }
+.pcard-right { text-align: right; }
+
+.detail-panel { background: #fff; border: 1px solid var(--line); border-radius: var(--r2); margin-bottom: 24px; overflow: hidden; }
+.dp-header { padding: 22px 26px; border-bottom: 1px solid var(--line); background: var(--paper2); }
+.dp-brand { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.dp-title { font-family: var(--serif); font-size: 22px; color: var(--ink); letter-spacing: -.3px; line-height: 1.3; }
+.dp-kpis { display: flex; border-bottom: 1px solid var(--line); }
+.dp-kpi { padding: 16px 22px; border-right: 1px solid var(--line); flex: 1; text-align: center; }
+.dp-kpi:last-child { border-right: none; }
+.dp-kpi-val { font-family: var(--serif); font-size: 22px; color: var(--ink); }
+.dp-kpi-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); margin-top: 4px; }
+.dp-body { padding: 22px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.dp-section-title { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); margin-bottom: 12px; }
+.dp-theme-row { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--ink2); }
+.dp-theme-row:last-child { border-bottom: none; }
+.dp-plus  { color: var(--green); font-weight: 700; line-height: 1.4; }
+.dp-minus { color: var(--red);   font-weight: 700; line-height: 1.4; }
+.dp-synth-wrap { padding: 0 26px 22px; }
+.dp-synthesis { padding: 14px 18px; background: var(--paper2); border-left: 3px solid var(--blue); border-radius: 0 var(--r) var(--r) 0; font-size: 13px; color: var(--ink2); line-height: 1.65; }
+
+.aspect-grid-6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.aspect-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r2); padding: 18px 20px; }
+.aspect-name { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink3); margin-bottom: 14px; }
+.aspect-rows { display: flex; flex-direction: column; gap: 9px; }
+.aspect-row { display: flex; align-items: center; gap: 8px; }
+.aspect-brand { font-size: 11px; color: var(--ink2); width: 76px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.insights-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.insight-card { background: #fff; border: 1px solid var(--line); border-radius: var(--r2); padding: 22px 24px; position: relative; overflow: hidden; }
+.insight-card::after { content: attr(data-num); position: absolute; bottom: -8px; right: 12px; font-family: var(--serif); font-size: 72px; color: rgba(0,0,0,.03); line-height: 1; pointer-events: none; }
+.ic-type { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-bottom: 8px; }
+.ic-title { font-family: var(--serif); font-size: 16px; color: var(--ink); letter-spacing: -.2px; line-height: 1.3; margin-bottom: 10px; }
+.ic-body { font-size: 12.5px; color: var(--ink2); line-height: 1.65; }
+.ic-foot { margin-top: 12px; }
+
+.heat-val { display: inline-block; min-width: 36px; padding: 3px 10px; border-radius: 4px; font-family: var(--mono); font-size: 11.5px; font-weight: 500; }
+.vfm-score { font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--purple-bg); color: var(--purple); border: 1px solid #cbbfed; }
+.empty-state { padding: 48px; text-align: center; font-size: 13px; color: var(--ink3); font-family: var(--mono); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="s-logo-mark">Luggage<em>IQ</em></div>
+    <div class="s-logo-sub">Amazon India · Intelligence</div>
+  </div>
+  <div class="s-section">Navigation</div>
+  <button class="nav-item active" onclick="showView('overview',this)"><span class="nav-icon">◈</span><span>Overview</span></button>
+  <button class="nav-item" onclick="showView('comparison',this)"><span class="nav-icon">⊞</span><span>Brand Comparison</span></button>
+  <button class="nav-item" onclick="showView('products',this)"><span class="nav-icon">◻</span><span>Product Drilldown</span></button>
+  <button class="nav-item" onclick="showView('insights',this)"><span class="nav-icon">◆</span><span>Agent Insights</span></button>
+  <button class="nav-item" onclick="showView('aspects',this)"><span class="nav-icon">◑</span><span>Aspect Analysis</span></button>
+  <div class="s-section" style="margin-top:8px">Filter Brands</div>
+  <div class="s-brand-list" id="sidebarBrands"></div>
+  <div class="s-footer"><div class="s-footer-stat">6 brands tracked<br>60 products · 1,200+ reviews<br>Last synced: today</div></div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="page-title" id="pageTitle">Market Overview</div>
+      <div class="breadcrumb" id="breadcrumb">AMAZON INDIA / LUGGAGE / ALL BRANDS</div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge badge-green">● Live</span>
+      <span class="badge badge-blue">Amazon India</span>
+      <span class="badge badge-amber">Luggage · Trolleys</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="view active" id="view-overview">
+      <div class="pg-header">
+        <div class="pg-eyebrow">Competitive Intelligence Report</div>
+        <div class="pg-h1">Luggage Market <em>Snapshot</em></div>
+        <div class="pg-desc">Price positioning, sentiment, and discount analysis across 6 major brands on Amazon India.</div>
+      </div>
+      <div class="kpi-row" id="kpiRow"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Avg Selling Price vs List Price</span><span class="card-hint">₹ INR</span></div>
+          <div class="card-body"><div class="chart-wrap h240"><canvas id="priceChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Sentiment Score &amp; Star Rating</span><span class="card-hint">Score / 100</span></div>
+          <div class="card-body"><div class="chart-wrap h240"><canvas id="sentChart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Average Discount % by Brand</span><span class="card-hint">High = demand weakness signal</span></div>
+          <div class="card-body"><div class="chart-wrap h200"><canvas id="discountChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Review Volume Distribution</span><span class="card-hint">Total reviews analysed</span></div>
+          <div class="card-body"><div class="chart-wrap h200"><canvas id="reviewChart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="card mb24">
+        <div class="card-header"><span class="card-title">Theme Sentiment Heatmap</span><span class="card-hint">Score 0–100 per attribute · all brands</span></div>
+        <div class="tbl-wrap"><table class="data-table" id="themeTable"></table></div>
+      </div>
+    </div>
+
+    <!-- COMPARISON -->
+    <div class="view" id="view-comparison">
+      <div class="pg-header">
+        <div class="pg-eyebrow">Brand Analysis</div>
+        <div class="pg-h1">Side-by-side <em>Comparison</em></div>
+        <div class="pg-desc">Filter, sort, and benchmark every brand across price, discount, sentiment, and value.</div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-lbl">Sort</span>
+        <select class="filter-select" id="sortBy" onchange="renderComparison()">
+          <option value="sentiment">Sentiment</option><option value="avgPrice">Price</option>
+          <option value="discount">Discount</option><option value="rating">Rating</option>
+          <option value="reviews">Reviews</option><option value="vfm">VFM Index</option>
+        </select>
+        <div class="filter-div"></div>
+        <span class="filter-lbl">Min Rating</span>
+        <select class="filter-select" id="minRating" onchange="renderComparison()">
+          <option value="0">Any</option><option value="3.5">3.5+</option><option value="4.0">4.0+</option><option value="4.3">4.3+</option>
+        </select>
+        <div class="filter-div"></div>
+        <span class="filter-lbl">Price Band</span>
+        <select class="filter-select" id="priceBand" onchange="renderComparison()">
+          <option value="all">All</option><option value="value">Value &lt;₹3K</option>
+          <option value="mid">Mid ₹3–6K</option><option value="premium">Premium &gt;₹6K</option>
+        </select>
+      </div>
+      <div class="card mb24"><div class="tbl-wrap"><table class="data-table" id="compTable"></table></div></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Price vs Sentiment Scatter</span><span class="card-hint">Bubble size = review volume</span></div>
+          <div class="card-body"><div class="chart-wrap h240"><canvas id="scatterChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Value-for-Money Index</span><span class="card-hint">Sentiment ÷ price tier</span></div>
+          <div class="card-body"><div class="chart-wrap h240"><canvas id="vfmChart"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="view" id="view-products">
+      <div class="pg-header">
+        <div class="pg-eyebrow">Product-level Analysis</div>
+        <div class="pg-h1">Product <em>Drilldown</em></div>
+        <div class="pg-desc">Click any product card to view detailed synthesis, themes, and pricing breakdown.</div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-lbl">Brand</span>
+        <select class="filter-select" id="pBrand" onchange="renderProducts()"><option value="all">All</option></select>
+        <div class="filter-div"></div>
+        <span class="filter-lbl">Category</span>
+        <select class="filter-select" id="pCat" onchange="renderProducts()">
+          <option value="all">All</option><option value="Trolley">Trolley</option><option value="Backpack">Backpack</option><option value="Duffle">Duffle</option>
+        </select>
+        <div class="filter-div"></div>
+        <span class="filter-lbl">Min Rating</span>
+        <select class="filter-select" id="pRating" onchange="renderProducts()">
+          <option value="0">Any</option><option value="4">4.0+</option><option value="4.3">4.3+</option>
+        </select>
+        <div class="filter-div"></div>
+        <span class="filter-lbl">Sentiment</span>
+        <select class="filter-select" id="pSent" onchange="renderProducts()">
+          <option value="all">Any</option><option value="high">High ≥75</option><option value="mid">Mid 50–74</option><option value="low">Low &lt;50</option>
+        </select>
+      </div>
+      <div class="product-grid" id="productGrid"></div>
+      <div class="detail-panel" id="detailPanel" style="display:none"></div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="view" id="view-insights">
+      <div class="pg-header">
+        <div class="pg-eyebrow">AI-Synthesised Intelligence</div>
+        <div class="pg-h1">Agent <em>Insights</em></div>
+        <div class="pg-desc">7 non-obvious conclusions synthesised from 1,200+ reviews and pricing signals. Patterns that star ratings alone won't reveal.</div>
+      </div>
+      <div class="insights-layout" id="insightsGrid"></div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Anomaly Detection</span><span class="card-hint">Signals that contradict surface-level data</span></div>
+        <div class="tbl-wrap"><table class="data-table" id="anomalyTable"></table></div>
+      </div>
+    </div>
+
+    <!-- ASPECTS -->
+    <div class="view" id="view-aspects">
+      <div class="pg-header">
+        <div class="pg-eyebrow">Attribute Intelligence</div>
+        <div class="pg-h1">Aspect <em>Analysis</em></div>
+        <div class="pg-desc">Sentiment broken down by six physical attributes: Wheels · Handle · Material · Zipper · Size · Durability.</div>
+      </div>
+      <div class="aspect-grid-6" id="aspectGrid"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Radar — All Brands vs All Aspects</span></div>
+          <div class="card-body"><div class="chart-wrap h280"><canvas id="radarChart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Complaint Frequency by Aspect</span></div>
+          <div class="card-body"><div class="chart-wrap h280"><canvas id="heatChart"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script>
+const BC = { Safari:'#1a3fc4','Skybags':'#0f7c4a','American Tourister':'#9a5f00','VIP':'#5b28c8','Aristocrat':'#c42020','Nasher Miles':'#0f6e6e' };
+const brands = [
+  {id:'safari',name:'Safari',color:BC['Safari'],avgPrice:4850,listPrice:6200,discount:21.8,rating:4.3,reviews:18420,sentiment:79,products:12,priceBand:'mid',pros:['Excellent build quality','Smooth 360° wheels','Spacious interiors','TSA lock reliability'],cons:['Handle wobble in premium range','Customer service delays','Limited color options'],aspects:{wheels:84,handle:68,material:82,zipper:78,size:80,durability:85},synthesis:'Safari dominates the mid-premium segment with consistently praised build quality. Wheel performance is the strongest differentiator. Customer service is the weakest link.'},
+  {id:'skybags',name:'Skybags',color:BC['Skybags'],avgPrice:2650,listPrice:3800,discount:30.3,rating:4.1,reviews:22100,sentiment:71,products:14,priceBand:'value',pros:['Trendy designs & colors','Lightweight cabins','Budget-friendly','Good for short trips'],cons:['Zipper durability issues','Wheels scratch easily','Thin shell material','Stitching unravels at 6 months'],aspects:{wheels:62,handle:72,material:58,zipper:51,size:75,durability:55},synthesis:'Skybags wins on style and price but loses on durability. The high discount strategy drives volume. Fashion-forward buyers aged 18–28 are the core audience.'},
+  {id:'american-tourister',name:'American Tourister',color:BC['American Tourister'],avgPrice:5900,listPrice:8200,discount:28.0,rating:4.4,reviews:31500,sentiment:83,products:11,priceBand:'mid',pros:['Brand trust & recognition','Superior handle ergonomics','Excellent warranty support','Strong hinge system'],cons:['Overpriced vs Safari for similar specs','Heavy for cabin size','Limited hard-shell options'],aspects:{wheels:80,handle:88,material:82,zipper:79,size:76,durability:87},synthesis:'American Tourister leverages Samsonite heritage for premium trust signals. Best-in-class handle ergonomics drive repeat buyers. 28% discount suggests list price inflation.'},
+  {id:'vip',name:'VIP',color:BC['VIP'],avgPrice:3400,listPrice:5100,discount:33.3,rating:4.0,reviews:14200,sentiment:65,products:10,priceBand:'value',pros:['Strong brand recognition in Tier 2/3 cities','Decent wheel quality','Good lock systems'],cons:['Outdated design language','Inconsistent quality across batches','Stiff zippers'],aspects:{wheels:68,handle:64,material:60,zipper:57,size:70,durability:62},synthesis:'VIP relies on legacy brand equity. A 33% average discount — highest in the set — signals pricing pressure and weak organic demand.'},
+  {id:'aristocrat',name:'Aristocrat',color:BC['Aristocrat'],avgPrice:2100,listPrice:2900,discount:27.6,rating:3.8,reviews:9800,sentiment:59,products:8,priceBand:'value',pros:['Ultra budget-friendly','Acceptable for occasional use','Lightweight'],cons:['Handle breaks after few trips','Wheels fall off','Very thin shell','No warranty support'],aspects:{wheels:42,handle:38,material:45,zipper:50,size:65,durability:40},synthesis:'Aristocrat serves the extreme-value segment. Reviews are bimodally polarised — occasional travellers rate 5 stars; frequent fliers rate 1. Mispositioned above ₹2,000.'},
+  {id:'nasher-miles',name:'Nasher Miles',color:BC['Nasher Miles'],avgPrice:6800,listPrice:8500,discount:20.0,rating:4.5,reviews:7200,sentiment:86,products:9,priceBand:'premium',pros:['Premium hard-shell finish','Best-in-class zipper quality','Elegant design','Strong wheel system'],cons:['Higher price point','Limited review volume','Availability inconsistent'],aspects:{wheels:87,handle:82,material:90,zipper:91,size:78,durability:88},synthesis:'Nasher Miles is the dark horse. Highest sentiment (86) and rating (4.5) but smallest review base. Premium positioning with moderate discounting signals confidence.'},
+];
+const products=[
+  {id:'s1',brand:'Safari',name:'Safari Quantum 4W 75cm Large Trolley',price:5499,listPrice:7000,discount:21,rating:4.4,reviews:2100,category:'Trolley',sentiment:81,pros:['Smooth wheels','Solid build'],cons:['Heavy when empty']},
+  {id:'s2',brand:'Safari',name:'Safari Superlite 55cm Cabin Trolley',price:3999,listPrice:5200,discount:23,rating:4.3,reviews:3400,category:'Trolley',sentiment:78,pros:['Lightweight','TSA lock'],cons:['Limited colors']},
+  {id:'s3',brand:'Safari',name:'Safari Tribe 32L Laptop Backpack',price:1850,listPrice:2500,discount:26,rating:4.2,reviews:1800,category:'Backpack',sentiment:74,pros:['Padded compartments','Durable zips'],cons:['Straps uncomfortable after hours']},
+  {id:'s4',brand:'Safari',name:'Safari Aireon 4W 65cm Check-in',price:5200,listPrice:6500,discount:20,rating:4.5,reviews:2900,category:'Trolley',sentiment:84,pros:['Spinner wheels','Great capacity'],cons:['Handle slightly loose']},
+  {id:'sk1',brand:'Skybags',name:'Skybags Fizz 55cm Cabin Spinner',price:2499,listPrice:3800,discount:34,rating:4.1,reviews:4200,category:'Trolley',sentiment:70,pros:['Trendy design','Very light'],cons:['Zipper broke at 6 months']},
+  {id:'sk2',brand:'Skybags',name:'Skybags Rook 40L Laptop Backpack',price:1299,listPrice:1999,discount:35,rating:4.0,reviews:3100,category:'Backpack',sentiment:66,pros:['Stylish','Good price'],cons:['Stitching poor']},
+  {id:'sk3',brand:'Skybags',name:'Skybags Stratos 75cm Large Check-in',price:3299,listPrice:4800,discount:31,rating:4.0,reviews:2700,category:'Trolley',sentiment:68,pros:['Good storage'],cons:['Wheel scraped off']},
+  {id:'at1',brand:'American Tourister',name:'American Tourister Linex 69cm Spinner',price:5999,listPrice:8400,discount:29,rating:4.5,reviews:6200,category:'Trolley',sentiment:85,pros:['Premium feel','Warranty honoured'],cons:['Heavy','Expensive']},
+  {id:'at2',brand:'American Tourister',name:'American Tourister Airshield Pro 55cm',price:4799,listPrice:6500,discount:26,rating:4.4,reviews:4800,category:'Trolley',sentiment:83,pros:['Expandable','Good handle'],cons:['Buckle stiff']},
+  {id:'at3',brand:'American Tourister',name:'American Tourister Urban Groove Backpack',price:2499,listPrice:3500,discount:29,rating:4.3,reviews:3900,category:'Backpack',sentiment:80,pros:['Laptop sleeve excellent'],cons:['Side pockets small']},
+  {id:'v1',brand:'VIP',name:'VIP Skybag Stature 75cm Trolley',price:3799,listPrice:5500,discount:31,rating:4.1,reviews:2100,category:'Trolley',sentiment:67,pros:['Good storage','Decent wheels'],cons:['Zip stiff','Looks dated']},
+  {id:'v2',brand:'VIP',name:'VIP Verve 4W 65cm Spinner',price:3299,listPrice:4900,discount:33,rating:3.9,reviews:1800,category:'Trolley',sentiment:62,pros:['Classic design'],cons:['Quality inconsistent']},
+  {id:'v3',brand:'VIP',name:'VIP Turin Soft-Shell Duffle 55L',price:1899,listPrice:2800,discount:32,rating:3.8,reviews:1100,category:'Duffle',sentiment:58,pros:['Affordable','Large capacity'],cons:['Strap snaps']},
+  {id:'ar1',brand:'Aristocrat',name:'Aristocrat Glide 4W 75cm Check-in',price:2199,listPrice:3000,discount:27,rating:3.7,reviews:1500,category:'Trolley',sentiment:55,pros:['Cheap'],cons:['Handle broke at 3 months']},
+  {id:'ar2',brand:'Aristocrat',name:'Aristocrat LARK 55cm Cabin',price:1799,listPrice:2400,discount:25,rating:3.9,reviews:1200,category:'Trolley',sentiment:60,pros:['Very affordable'],cons:['Thin material']},
+  {id:'nm1',brand:'Nasher Miles',name:'Nasher Miles London 75cm Hard Trolley',price:6999,listPrice:8800,discount:20,rating:4.6,reviews:1800,category:'Trolley',sentiment:88,pros:['Outstanding shell','Ultra-smooth wheels','Premium zips'],cons:['Stock availability']},
+  {id:'nm2',brand:'Nasher Miles',name:'Nasher Miles Dublin 55cm Cabin Spinner',price:5999,listPrice:7500,discount:20,rating:4.5,reviews:1600,category:'Trolley',sentiment:86,pros:['Elegant finish','Great locks'],cons:['Pricey for India market']},
+  {id:'nm3',brand:'Nasher Miles',name:'Nasher Miles Berlin 65cm Check-in',price:6499,listPrice:8200,discount:21,rating:4.5,reviews:1400,category:'Trolley',sentiment:85,pros:['Hard shell durable','Well-designed interior'],cons:['Limited colors']},
+];
+const themes=[
+  {label:'Wheel Quality',safari:84,skybags:62,'american-tourister':80,vip:68,aristocrat:42,'nasher-miles':87},
+  {label:'Handle Ergonomics',safari:68,skybags:72,'american-tourister':88,vip:64,aristocrat:38,'nasher-miles':82},
+  {label:'Material / Shell',safari:82,skybags:58,'american-tourister':82,vip:60,aristocrat:45,'nasher-miles':90},
+  {label:'Zipper Quality',safari:78,skybags:51,'american-tourister':79,vip:57,aristocrat:50,'nasher-miles':91},
+  {label:'Size / Capacity',safari:80,skybags:75,'american-tourister':76,vip:70,aristocrat:65,'nasher-miles':78},
+  {label:'Durability',safari:85,skybags:55,'american-tourister':87,vip:62,aristocrat:40,'nasher-miles':88},
+  {label:'Value Perception',safari:76,skybags:80,'american-tourister':65,vip:70,aristocrat:75,'nasher-miles':60},
+  {label:'Design / Aesthetics',safari:72,skybags:85,'american-tourister':78,vip:55,aristocrat:50,'nasher-miles':88},
+];
+const insights=[
+  {type:'Anomaly Alert',num:'01',title:'Nasher Miles is severely underweighted by analysts',body:'7,200 reviews vs American Tourister\'s 31,500 — yet leads on both sentiment (86) and rating (4.5). Review velocity is accelerating. Competitive analyses that weight by volume miss this completely.',tag:'Emerging threat',tagCls:'tag-blue'},
+  {type:'Pricing Anomaly',num:'02',title:'VIP\'s 33% discount signals structural demand weakness',body:'Highest discount in the set, yet 4th in sentiment. The brand is discounting to compete, not winning on merit. List price is ~50% above selling price — a value trap masking real price erosion.',tag:'High risk',tagCls:'tag-red'},
+  {type:'Sentiment Split',num:'03',title:'Aristocrat\'s 3.8 rating hides a bimodal polarisation',body:'Average rating masks a 5★/1★ split. Occasional travellers rate 5 stars; frequent fliers rate 1. The product is mispositioned, not uniformly bad. A strict ₹2,000 cap would eliminate 80% of complaints.',tag:'Positioning gap',tagCls:'tag-amber'},
+  {type:'Category Insight',num:'04',title:'Skybags\' handle is its hidden, undermarketed advantage',body:'Despite poor durability scores, Skybags scores 72/100 on handles — second only to American Tourister (88). Buyers consistently praise the telescopic feel. This is not reflected in any brand messaging.',tag:'Opportunity',tagCls:'tag-green'},
+  {type:'Value-for-Money',num:'05',title:'Safari offers the best price-adjusted sentiment in the mid tier',body:'At ₹4,850 avg price and 79 sentiment, Safari\'s VFM index outperforms American Tourister (₹5,900 / 83). For 18% less spend you get 95% of sentiment outcome. Corporate procurement should benchmark Safari first.',tag:'Best buy',tagCls:'tag-green'},
+  {type:'Trust Signal',num:'06',title:'Skybags shows suspicious review clustering patterns',body:'Multiple reviews with identical phrasing cluster within 48-hour windows — indicating possible incentivised reviewing. Organic sentiment is likely 5–8 points lower than reported.',tag:'Integrity risk',tagCls:'tag-red'},
+  {type:'Strategic Gap',num:'07',title:'The ₹6,000–8,000 hard-shell segment is almost uncontested',body:'Safari and American Tourister cluster at ₹4,500–6,000. Above ₹6,000, only Nasher Miles operates at scale. Any brand improving quality and entering this tier faces minimal competition from Indian players.',tag:'Market gap',tagCls:'tag-purple'},
+];
+const anomalies=[
+  {brand:'VIP',signal:'High discount (33%)',expected:'Strong sales volume',actual:'Low sentiment (65), mid review count',sev:'high'},
+  {brand:'Skybags',signal:'Good handle score (72)',expected:'High overall durability',actual:'Lowest durability in set (55)',sev:'mid'},
+  {brand:'Aristocrat',signal:'3.8 avg rating',expected:'Uniformly mediocre product',actual:'Bimodal 5★/1★ split — mispositioned',sev:'mid'},
+  {brand:'Nasher Miles',signal:'Highest sentiment (86)',expected:'High review volume',actual:'Fewest reviews (7.2K) — underexposed',sev:'low'},
+  {brand:'American Tourister',signal:'Best handle score (88)',expected:'Premium price confidence',actual:'28% discount implies list price inflation',sev:'mid'},
+];
+
+let activeBrands=new Set(brands.map(b=>b.id));
+const charts={};
+const fBrands=()=>brands.filter(b=>activeBrands.has(b.id));
+const vfm=b=>{const t=b.avgPrice<3000?1:b.avgPrice<6000?2:3;return Math.round(b.sentiment/t);};
+const sC=s=>s>=75?'tag-green':s>=55?'tag-amber':'tag-red';
+const stars=r=>'★'.repeat(Math.floor(r))+(r%1>=.5?'½':'')+'☆'.repeat(5-Math.floor(r)-(r%1>=.5?1:0));
+const K=n=>n>=1000?(n/1000).toFixed(1)+'K':n;
+const pBT=p=>p<3000?'<span class="tag tag-green">Value</span>':p<6000?'<span class="tag tag-amber">Mid-Market</span>':'<span class="tag tag-blue">Premium</span>';
+const mkC=(id,cfg)=>{if(charts[id])charts[id].destroy();const c=document.getElementById(id);if(!c)return;charts[id]=new Chart(c,cfg);};
+const CO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{color:'rgba(0,0,0,.05)'}}}};
+
+function showView(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+  const T={overview:'Market Overview',comparison:'Brand Comparison',products:'Product Drilldown',insights:'Agent Insights',aspects:'Aspect Analysis'};
+  document.getElementById('pageTitle').textContent=T[id];
+  document.getElementById('breadcrumb').textContent='AMAZON INDIA / LUGGAGE / '+T[id].toUpperCase();
+  if(id==='comparison'){renderComparison();renderScatter();renderVFMChart();}
+  if(id==='products')renderProducts();
+  if(id==='aspects')renderAspects();
+}
+
+function renderSidebarBrands(){
+  document.getElementById('sidebarBrands').innerHTML=brands.map(b=>`
+    <div class="s-brand-item">
+      <input type="checkbox" id="sb-${b.id}" checked onchange="toggleBrand('${b.id}')">
+      <div class="s-swatch" style="background:${b.color}"></div>
+      <label class="s-brand-label" for="sb-${b.id}">${b.name}</label>
+    </div>`).join('');
+  const sel=document.getElementById('pBrand');
+  if(sel)sel.innerHTML='<option value="all">All Brands</option>'+brands.map(b=>`<option value="${b.name}">${b.name}</option>`).join('');
+}
+function toggleBrand(id){activeBrands.has(id)?activeBrands.delete(id):activeBrands.add(id);refreshAll();}
+
+function renderKPI(){
+  const fb=fBrands();
+  const kpis=[
+    {label:'Brands Tracked',val:fb.length,sub:'Amazon India · Luggage',acc:'#1a3fc4'},
+    {label:'Reviews Analysed',val:K(fb.reduce((a,b)=>a+b.reviews,0)),sub:`Across ${fb.reduce((a,b)=>a+b.products,0)} products`,acc:'#0f7c4a'},
+    {label:'Avg Sentiment',val:Math.round(fb.reduce((a,b)=>a+b.sentiment,0)/fb.length),sub:'Out of 100',acc:'#9a5f00'},
+    {label:'Avg Discount',val:(fb.reduce((a,b)=>a+b.discount,0)/fb.length).toFixed(1)+'%',sub:'Off list price',acc:'#5b28c8'},
+    {label:'Avg Sell Price',val:'₹'+K(Math.round(fb.reduce((a,b)=>a+b.avgPrice,0)/fb.length)),sub:'Mid-market dominant',acc:'#0f6e6e'},
+  ];
+  document.getElementById('kpiRow').innerHTML=kpis.map(k=>`
+    <div class="kpi">
+      <div class="kpi-accent" style="background:${k.acc}"></div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.val}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+}
+
+function renderPriceChart(){
+  const fb=fBrands();
+  mkC('priceChart',{type:'bar',data:{labels:fb.map(b=>b.name.split(' ')[0]),datasets:[
+    {label:'Sell Price',data:fb.map(b=>b.avgPrice),backgroundColor:fb.map(b=>b.color+'cc'),borderRadius:4,borderSkipped:false},
+    {label:'List Price',data:fb.map(b=>b.listPrice),backgroundColor:'transparent',borderColor:fb.map(b=>b.color+'66'),borderWidth:1.5,borderRadius:4,borderSkipped:false}
+  ]},options:{...CO,scales:{x:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{display:false}},y:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'},callback:v=>'₹'+Math.round(v/1000)+'K'},grid:{color:'rgba(0,0,0,.05)'}}}}});
+}
+function renderSentChart(){
+  const fb=fBrands();
+  mkC('sentChart',{type:'bar',data:{labels:fb.map(b=>b.name.split(' ')[0]),datasets:[
+    {label:'Sentiment',data:fb.map(b=>b.sentiment),backgroundColor:fb.map(b=>b.color+'bb'),borderRadius:4},
+    {label:'Rating ×20',data:fb.map(b=>+(b.rating*20).toFixed(1)),type:'line',borderColor:'#333',backgroundColor:'transparent',pointBackgroundColor:fb.map(b=>b.color),pointRadius:5,tension:.4}
+  ]},options:{...CO,scales:{x:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{color:'rgba(0,0,0,.05)'}}}}});
+}
+function renderDiscountChart(){
+  const fb=fBrands();
+  mkC('discountChart',{type:'bar',data:{labels:fb.map(b=>b.name.split(' ')[0]),datasets:[{label:'Discount %',data:fb.map(b=>b.discount),borderRadius:4,
+    backgroundColor:fb.map(b=>b.discount>30?'rgba(196,32,32,.12)':b.discount>25?'rgba(154,95,0,.12)':'rgba(15,124,74,.12)'),
+    borderColor:fb.map(b=>b.discount>30?'#c42020':b.discount>25?'#9a5f00':'#0f7c4a'),borderWidth:1.5
+  }]},options:{...CO,indexAxis:'y',scales:{x:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'},callback:v=>v+'%'},grid:{color:'rgba(0,0,0,.05)'}},y:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{display:false}}}}});
+}
+function renderReviewChart(){
+  const fb=fBrands();
+  mkC('reviewChart',{type:'doughnut',data:{labels:fb.map(b=>b.name),datasets:[{data:fb.map(b=>b.reviews),backgroundColor:fb.map(b=>b.color+'cc'),borderColor:fb.map(b=>b.color),borderWidth:1.5,hoverOffset:4}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:true,position:'right',labels:{color:'#555',font:{size:11,family:'Geist Mono'},boxWidth:9,padding:10}},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${K(ctx.raw)} reviews`}}}}});
+}
+function renderThemeTable(){
+  const fb=fBrands();const ids=fb.map(b=>b.id);
+  const hC=v=>v>=75?`background:rgba(15,124,74,.1);color:#0f7c4a`:v>=55?`background:rgba(154,95,0,.1);color:#9a5f00`:`background:rgba(196,32,32,.1);color:#c42020`;
+  document.getElementById('themeTable').innerHTML=`
+    <thead><tr><th>Theme</th>${fb.map(b=>`<th><div style="display:flex;align-items:center;gap:7px"><div class="s-swatch" style="background:${b.color}"></div>${b.name.split(' ')[0]}</div></th>`).join('')}</tr></thead>
+    <tbody>${themes.map(t=>`<tr><td style="font-weight:500;color:var(--ink)">${t.label}</td>${ids.map(id=>{const v=t[id]||0;return`<td style="text-align:center"><span class="heat-val" style="${hC(v)}">${v}</span></td>`;}).join('')}</tr>`).join('')}</tbody>`;
+}
+
+function renderComparison(){
+  const s=document.getElementById('sortBy').value,r=parseFloat(document.getElementById('minRating').value),pb=document.getElementById('priceBand').value;
+  let fb=fBrands().filter(b=>b.rating>=r);
+  if(pb==='value')fb=fb.filter(b=>b.avgPrice<3000);
+  if(pb==='mid')fb=fb.filter(b=>b.avgPrice>=3000&&b.avgPrice<=6000);
+  if(pb==='premium')fb=fb.filter(b=>b.avgPrice>6000);
+  fb.sort((a,b)=>s==='vfm'?vfm(b)-vfm(a):b[s]-a[s]);
+  document.getElementById('compTable').innerHTML=`
+    <thead><tr><th>Brand</th><th>Positioning</th><th>Avg Price</th><th>List Price</th><th>Discount</th><th>Rating</th><th>Reviews</th><th>Sentiment</th><th>VFM Index</th><th>Key Strength</th></tr></thead>
+    <tbody>${fb.map(b=>`<tr>
+      <td><div class="brand-cell"><div class="brand-swatch" style="background:${b.color}"></div><span class="brand-cell-name">${b.name}</span></div></td>
+      <td>${pBT(b.avgPrice)}</td>
+      <td style="font-family:var(--mono);font-weight:600;color:var(--ink)">₹${b.avgPrice.toLocaleString()}</td>
+      <td style="font-family:var(--mono);color:var(--ink3);text-decoration:line-through">₹${b.listPrice.toLocaleString()}</td>
+      <td><span class="tag ${b.discount>30?'tag-red':b.discount>25?'tag-amber':'tag-green'}">${b.discount.toFixed(1)}%</span></td>
+      <td><span class="stars">${stars(b.rating)}</span><span class="star-num">${b.rating}</span></td>
+      <td style="font-family:var(--mono);color:var(--ink2)">${K(b.reviews)}</td>
+      <td><span class="tag ${sC(b.sentiment)}">${b.sentiment}/100</span></td>
+      <td><span class="vfm-score">${vfm(b)}</span></td>
+      <td style="font-size:12px;color:var(--ink3)">${b.pros[0]}</td>
+    </tr>`).join('')}</tbody>`;
+}
+function renderScatter(){
+  const fb=fBrands();
+  mkC('scatterChart',{type:'scatter',data:{datasets:fb.map(b=>({label:b.name,data:[{x:b.avgPrice,y:b.sentiment}],backgroundColor:b.color+'cc',borderColor:b.color,pointRadius:Math.max(7,b.reviews/3000),pointHoverRadius:14}))},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'right',labels:{color:'#555',font:{size:10,family:'Geist Mono'},boxWidth:8,padding:8}},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ₹${ctx.parsed.x.toLocaleString()} · ${ctx.parsed.y} sentiment`}}},
+  scales:{x:{title:{display:true,text:'Avg Selling Price (₹)',color:'#888',font:{size:10,family:'Geist Mono'}},ticks:{color:'#888',font:{size:11,family:'Geist Mono'},callback:v=>'₹'+Math.round(v/1000)+'K'},grid:{color:'rgba(0,0,0,.05)'}},
+    y:{title:{display:true,text:'Sentiment Score',color:'#888',font:{size:10,family:'Geist Mono'}},min:40,max:95,ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{color:'rgba(0,0,0,.05)'}}}}});
+}
+function renderVFMChart(){
+  const fb=fBrands().slice().sort((a,b)=>vfm(b)-vfm(a));
+  mkC('vfmChart',{type:'bar',data:{labels:fb.map(b=>b.name.split(' ')[0]),datasets:[{label:'VFM Index',data:fb.map(b=>vfm(b)),backgroundColor:fb.map(b=>b.color+'bb'),borderRadius:4}]},
+  options:{...CO,scales:{x:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{display:false}},y:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{color:'rgba(0,0,0,.05)'}}}}});
+}
+
+function renderProducts(){
+  const bf=document.getElementById('pBrand').value,cf=document.getElementById('pCat').value,rf=parseFloat(document.getElementById('pRating').value),sf=document.getElementById('pSent').value;
+  let list=products.filter(p=>{
+    if(!activeBrands.has(brands.find(b=>b.name===p.brand)?.id))return false;
+    if(bf!=='all'&&p.brand!==bf)return false;
+    if(cf!=='all'&&p.category!==cf)return false;
+    if(p.rating<rf)return false;
+    if(sf==='high'&&p.sentiment<75)return false;
+    if(sf==='mid'&&(p.sentiment<50||p.sentiment>=75))return false;
+    if(sf==='low'&&p.sentiment>=50)return false;
+    return true;
+  });
+  const grid=document.getElementById('productGrid');
+  if(!list.length){grid.innerHTML='<div class="empty-state">No products match your filters.</div>';return;}
+  grid.innerHTML=list.map(p=>{const br=brands.find(b=>b.name===p.brand);return`
+    <div class="pcard" id="pc-${p.id}" onclick="showDetail('${p.id}')">
+      <div class="pcard-brand" style="color:${br.color}">${p.brand}</div>
+      <div class="pcard-title">${p.name}</div>
+      <div class="pcard-tags">
+        ${p.pros.slice(0,2).map(t=>`<span class="tag tag-green" style="font-size:10px">${t}</span>`).join('')}
+        ${p.cons.slice(0,1).map(t=>`<span class="tag tag-red" style="font-size:10px">${t}</span>`).join('')}
+      </div>
+      <div class="pcard-footer">
+        <div><div class="pcard-price">₹${p.price.toLocaleString()}</div><div class="pcard-list">₹${p.listPrice.toLocaleString()}</div></div>
+        <div class="pcard-right">
+          <span class="tag ${sC(p.sentiment)}">${p.sentiment}</span>
+          <div style="margin-top:4px"><span class="stars">${stars(p.rating)}</span><span class="star-num">${p.rating}</span></div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:2px">${K(p.reviews)} reviews</div>
+        </div>
+      </div>
+    </div>`}).join('');
+}
+function showDetail(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const br=brands.find(b=>b.name===p.brand);
+  document.querySelectorAll('.pcard').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('pc-'+id)?.classList.add('selected');
+  const panel=document.getElementById('detailPanel');
+  panel.style.display='block';
+  panel.innerHTML=`
+    <div class="dp-header"><div class="dp-brand" style="color:${br.color}">${p.brand.toUpperCase()}</div><div class="dp-title">${p.name}</div></div>
+    <div class="dp-kpis">
+      <div class="dp-kpi"><div class="dp-kpi-val">₹${p.price.toLocaleString()}</div><div class="dp-kpi-lbl">Sell Price</div></div>
+      <div class="dp-kpi"><div class="dp-kpi-val" style="text-decoration:line-through;color:var(--ink3)">₹${p.listPrice.toLocaleString()}</div><div class="dp-kpi-lbl">List Price</div></div>
+      <div class="dp-kpi"><div class="dp-kpi-val" style="color:var(--green)">${p.discount}%</div><div class="dp-kpi-lbl">Discount</div></div>
+      <div class="dp-kpi"><div class="dp-kpi-val">${p.rating}</div><div class="dp-kpi-lbl">Rating</div></div>
+      <div class="dp-kpi"><div class="dp-kpi-val">${K(p.reviews)}</div><div class="dp-kpi-lbl">Reviews</div></div>
+      <div class="dp-kpi"><div class="dp-kpi-val">${p.sentiment}/100</div><div class="dp-kpi-lbl">Sentiment</div></div>
+    </div>
+    <div class="dp-body">
+      <div><div class="dp-section-title">Praise Themes</div>${p.pros.map(t=>`<div class="dp-theme-row"><span class="dp-plus">+</span>${t}</div>`).join('')}</div>
+      <div><div class="dp-section-title">Complaint Themes</div>${p.cons.map(t=>`<div class="dp-theme-row"><span class="dp-minus">−</span>${t}</div>`).join('')}</div>
+    </div>
+    <div class="dp-synth-wrap"><div class="dp-section-title">Review Synthesis</div><div class="dp-synthesis">${br.synthesis}</div></div>`;
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderInsights(){
+  document.getElementById('insightsGrid').innerHTML=insights.map(i=>`
+    <div class="insight-card" data-num="${i.num}">
+      <div class="ic-type">${i.type}</div>
+      <div class="ic-title">${i.title}</div>
+      <div class="ic-body">${i.body}</div>
+      <div class="ic-foot"><span class="tag ${i.tagCls}">${i.tag}</span></div>
+    </div>`).join('');
+  document.getElementById('anomalyTable').innerHTML=`
+    <thead><tr><th>Brand</th><th>Observed Signal</th><th>Expected Behaviour</th><th>Actual Behaviour</th><th>Severity</th></tr></thead>
+    <tbody>${anomalies.map(a=>{const br=brands.find(b=>b.name===a.brand);const sc=a.sev==='high'?'tag-red':a.sev==='mid'?'tag-amber':'tag-green';return`
+      <tr>
+        <td><div class="brand-cell"><div class="brand-swatch" style="background:${br?.color}"></div><span class="brand-cell-name">${a.brand}</span></div></td>
+        <td style="color:var(--ink2)">${a.signal}</td>
+        <td style="color:var(--ink3)">${a.expected}</td>
+        <td style="font-weight:500;color:var(--ink)">${a.actual}</td>
+        <td><span class="tag ${sc}">${a.sev}</span></td>
+      </tr>`;}).join('')}</tbody>`;
+}
+
+function renderAspects(){
+  const ASPECTS=['wheels','handle','material','zipper','size','durability'];
+  const ALBL={wheels:'Wheel Quality',handle:'Handle Ergonomics',material:'Material / Shell',zipper:'Zipper Quality',size:'Size / Capacity',durability:'Durability'};
+  const fb=fBrands();
+  document.getElementById('aspectGrid').innerHTML=ASPECTS.map(a=>{
+    const rows=fb.map(b=>({n:b.name.split(' ')[0],c:b.color,v:b.aspects[a]})).sort((x,y)=>y.v-x.v);
+    return`<div class="aspect-card">
+      <div class="aspect-name">${ALBL[a]}</div>
+      <div class="aspect-rows">${rows.map(r=>`
+        <div class="aspect-row">
+          <div class="aspect-brand">${r.n}</div>
+          <div class="mbar-track"><div class="mbar-fill" style="width:${r.v}%;background:${r.c}"></div></div>
+          <div class="mbar-val" style="color:${r.v>=75?'var(--green)':r.v>=55?'var(--amber)':'var(--red)'}">${r.v}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;}).join('');
+  mkC('radarChart',{type:'radar',data:{labels:ASPECTS.map(a=>ALBL[a].split(' ')[0]),datasets:fb.map(b=>({label:b.name,data:ASPECTS.map(a=>b.aspects[a]),backgroundColor:b.color+'18',borderColor:b.color,pointBackgroundColor:b.color,pointRadius:3,borderWidth:1.5}))},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#555',font:{size:10,family:'Geist Mono'},boxWidth:8,padding:8}}},scales:{r:{min:0,max:100,ticks:{color:'#999',font:{size:9,family:'Geist Mono'},stepSize:25,backdropColor:'transparent'},grid:{color:'rgba(0,0,0,.07)'},pointLabels:{color:'#555',font:{size:11,family:'Geist Mono'}}}}}});
+  mkC('heatChart',{type:'bar',data:{labels:fb.map(b=>b.name.split(' ')[0]),datasets:ASPECTS.map(a=>({label:ALBL[a].split(' ')[0],data:fb.map(b=>100-b.aspects[a]),stack:'c'}))},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#555',font:{size:10,family:'Geist Mono'},boxWidth:8,padding:6}},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.raw} complaint pts`}}},
+  scales:{x:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{display:false}},y:{ticks:{color:'#888',font:{size:11,family:'Geist Mono'}},grid:{color:'rgba(0,0,0,.05)'},title:{display:true,text:'Complaint score',color:'#888',font:{size:10,family:'Geist Mono'}}}}}});
+}
+
+function refreshAll(){
+  renderKPI();renderPriceChart();renderSentChart();renderDiscountChart();renderReviewChart();renderThemeTable();
+  const av=document.querySelector('.view.active').id.replace('view-','');
+  if(av==='comparison'){renderComparison();renderScatter();renderVFMChart();}
+  if(av==='products')renderProducts();
+  if(av==='aspects')renderAspects();
+}
+
+renderSidebarBrands();renderInsights();
+setTimeout(()=>{renderKPI();renderPriceChart();renderSentChart();renderDiscountChart();renderReviewChart();renderThemeTable();},80);
+</script>
+</body>
+</html>
