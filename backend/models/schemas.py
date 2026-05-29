@@ -13,7 +13,8 @@ class AspectScores(BaseModel):
 
 class BrandSummary(BaseModel):
     id: str
-    name: str
+    first_name: str
+    last_name: str
     avg_price: int
     list_price: int
     discount_pct: float
@@ -26,6 +27,8 @@ class BrandSummary(BaseModel):
     aspects: AspectScores
     synthesis: str
     vfm_index: int
+    salary: int
+    avg_month_int
 
 
 class ProductItem(BaseModel):
