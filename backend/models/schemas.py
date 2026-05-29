@@ -63,6 +63,7 @@ class AnomalyItem(BaseModel):
     expected: str
     actual: str
     severity: str
+    feedback: str
 
 
 class PipelineStatus(BaseModel):
