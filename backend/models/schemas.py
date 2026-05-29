@@ -45,6 +45,7 @@ class ProductItem(BaseModel):
     sentiment_score: int
     top_pros: List[str]
     top_cons: List[str]
+    date: int
 
 
 class InsightItem(BaseModel):
