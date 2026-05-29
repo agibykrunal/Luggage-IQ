@@ -23,8 +23,6 @@ def get_brand_sentiment() -> Optional[Dict]:
 @lru_cache(maxsize=1)
 def get_aspect_scores() -> Optional[Dict]:
     return _load_json(DATA_DIR / "aspect_scores.json")
-
-
 @lru_cache(maxsize=1)
 def get_brand_themes() -> Optional[Dict]:
     return _load_json(DATA_DIR / "brand_themes.json")
