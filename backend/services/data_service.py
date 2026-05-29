@@ -7,7 +7,6 @@ DATA_DIR = Path("data/processed")
 RAW_DIR = Path("data/raw")
 USER_DATA = PATH("data/user")
 
-
 def _load_json(path: Path) -> Any:
     if not path.exists():
         return None
