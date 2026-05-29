@@ -19,6 +19,7 @@ def get_brand_sentiment() -> Optional[Dict]:
     return _load_json(DATA_DIR / "brand_sentiment.json")
 
 
+
 @lru_cache(maxsize=1)
 def get_aspect_scores() -> Optional[Dict]:
     return _load_json(DATA_DIR / "aspect_scores.json")
@@ -51,6 +52,7 @@ def invalidate_cache():
     get_agent_insights.cache_clear()
     get_anomalies.cache_clear()
     get_products.cache_clear()
+    get_salary.cache_clear()
 
 
 def compute_vfm_index(sentiment: int, avg_price: int) -> int:
