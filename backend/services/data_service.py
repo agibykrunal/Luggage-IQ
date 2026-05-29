@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from functools import lru_cache
 from typing import List, Dict, Any, Optional
-
+#it will only runif datais given
 DATA_DIR = Path("data/processed")
 RAW_DIR = Path("data/raw")
 USER_DATA = PATH("data/user")
