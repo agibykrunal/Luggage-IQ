@@ -6,7 +6,6 @@ from backend.services.data_service import (
 
 router = APIRouter()
 
-
 @router.get("/")
 def list_brands(
     min_rating: Optional[float] = Query(None),
