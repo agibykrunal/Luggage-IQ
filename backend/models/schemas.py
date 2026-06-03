@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 
-#s
+
 class AspectScores(BaseModel):
     wheels: Optional[int] = None
     handle: Optional[int] = None
