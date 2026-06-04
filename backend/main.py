@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
 from backend.routers import brands, products, insights, pipeline
-
+#sjsjsj
 app = FastAPI(
     title="LuggageIQ API",
     description="Competitive intelligence backend for Amazon India luggage brands",
