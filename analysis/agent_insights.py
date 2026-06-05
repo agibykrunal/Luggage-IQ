@@ -2,7 +2,7 @@ import json
 import os
 import argparse
 from pathlib import Path
-#sjsj
+#sjs
 OUTPUT_DIR = Path("data/processed")
 
 
