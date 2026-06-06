@@ -5,7 +5,7 @@ from pathlib import Path
 
 OUTPUT_DIR = Path("data/processed")
 
-#ssssss
+#sssss
 
 def build_prompt(brand_data, aspect_data, anomaly_data):
     brands_summary = json.dumps(brand_data, indent=2)
